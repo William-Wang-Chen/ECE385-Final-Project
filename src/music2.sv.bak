@@ -1,0 +1,15 @@
+module music2 (input logic 				Clk,
+				  input logic 	[18:0] 	Addr2,   
+				  output logic [15:0] 	music_content2);
+
+	logic [15:0] music_memory[0:138143];
+	initial
+	begin
+		$readmemh("bombsound.txt", music_memory);
+	end
+	
+	always_ff @ (posedge Clk)
+		begin
+			music_content <= music_memory[Addr];
+		end
+endmodule

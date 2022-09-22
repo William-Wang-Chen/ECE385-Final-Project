@@ -1,0 +1,87 @@
+module music_state2 (
+							input logic Clk, Reset,
+							input logic INIT_FINISH, data_over,
+							input logic	bomb_ball,
+							input logic	bomb_ball2,
+							output logic INIT2,
+							output [18:0] Addr2
+							);
+							
+
+logic [18:0] Addr_in;
+logic [3:0] count_in, count;
+							
+enum logic [2:0] {IDLE, MUSIC_OFF, MUSIC_ON} curr_state, next_state;
+
+   always_ff @ (posedge Clk)
+    begin
+        if (Reset)
+		  begin
+            curr_state <= IDLE;
+				Addr2 <= 19'd0;
+				count <= 4'b0;
+		  end
+		  else
+		  begin
+            curr_state <= next_state;
+				Addr2 <= Addr_in;
+				count <= count_in;
+		  end
+    end
+			
+always_comb
+   begin
+		INIT2 = 1'b0;
+		Addr_in = Addr2;
+		count_in = count;
+		next_state  = curr_state;
+
+	unique case(curr_state)
+	IDLE:
+		begin
+		if (INIT_FINISH)
+			next_state = MUSIC_OFF;
+		end
+	MUSIC_OFF:
+		begin
+		if ((bomb_exploding == 1) || (bomb_exploding2 == 1))
+			next_state = MUSIC_ON;
+		end
+	MUSIC_ON:
+		begin
+		if (Addr2 == 19'd138143)
+			next_state = MUSIC_OFF;
+		end
+		default: ;
+			
+	endcase	
+		
+
+	case(curr_state)
+	IDLE: 
+		begin 
+			INIT2 = 1'b1;
+			Addr_in = 19'd0;
+		end
+	MUSIC_OFF: Addr_in = 19'd0;
+	MUSIC_ON:
+		begin
+			if ((count < 4'd10) && data_over)
+				count_in = count + 4'd1;
+			else if (count < 4'd10)
+				count_in = count;
+			else 
+				count_in = 4'd0;
+
+			if ((Addr2 < 19'd138143) && data_over && (count == 4'd9))
+				Addr_in = Addr2 + 19'd1;
+			else if (Addr < 19'd138143)
+				Addr_in = Addr2;
+			else
+				Addr_in = 19'd138143;
+		end
+
+	default: ;
+	endcase	
+	end
+endmodule

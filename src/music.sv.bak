@@ -1,0 +1,17 @@
+module music (
+				input logic Clk,
+				input logic [18:0] Addr,   
+				output logic [15:0] music_data			
+					);
+
+	logic [15:0] music_memory[0:85114];
+	initial
+	begin
+		$readmemh("music.txt", music_memory);
+	end
+	
+	always_ff @ (posedge Clk)
+		begin
+			music_data <= music_memory[Addr];
+		end
+endmodule
